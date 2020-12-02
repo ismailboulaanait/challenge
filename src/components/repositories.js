@@ -1,6 +1,7 @@
 import React from 'react';
 import axion from 'axios';
 import Repository from './repository';
+import disableScroll from 'disable-scroll';
 
 
 class Repositories extends React.Component {
@@ -53,6 +54,7 @@ class Repositories extends React.Component {
 
 
     async loadData()  {
+        disableScroll.on();
         console.log('page => ', this.state.page);
         let yesterday = new Date(Date.now() - 86400000)
        
@@ -72,6 +74,7 @@ class Repositories extends React.Component {
             .catch(
                 err => console.log(err)
             )
+            disableScroll.off()
         
     }
 
