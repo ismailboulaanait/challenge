@@ -1,35 +1,96 @@
-import React , {useState , useEffect} from 'react'
-import axion from 'axios'
-import Repository from './repository'
+import React from 'react';
+import axion from 'axios';
+import Repository from './repository';
 
 
-function Repositories() {
+class Repositories extends React.Component {
 
-    const [repos, setRepos] = useState([])
+    constructor(props) {
+        super(props);
+        this.state = {
+            repos: [],
+            loading: true,
+            page: 1,
+         };
+    }
+    
+    formatDate = (date) => {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
 
-    useEffect( () => {
-        loadData()
-        
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
 
-    }, [])
-
-    const loadData = async () =>  {
-        await axion.get('https://api.github.com/search/repositories?q=created:>2017-10-22&sort=stars&order=desc&page=2')
-        .then(
-            res => {
-                console.log(res.data.items)
-                setRepos(res.data.items)
-            }
-        )
+        return [year, month, day].join('-');
     }
 
-  
 
-    return (
-        <div>
-        { repos.map(item => <Repository key={item.id}  repo={item}></Repository>)}
-      </div>
-    )
+
+    componentDidMount() {
+        const that = this;
+        window.addEventListener('scroll', function () {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                console.log("you're at the bottom of the page");
+                that.next()
+            }
+        });
+        this.loadData()
+
+    }
+
+
+    next = () => {
+        this.setState({
+            loading : true,
+        });
+        this.loadData();
+
+    }
+
+
+    async loadData()  {
+        console.log('page => ', this.state.page);
+        let yesterday = new Date(Date.now() - 86400000)
+       
+            await axion.get(`https://api.github.com/search/repositories?q=created:>${this.formatDate(yesterday)}&sort=stars&order=desc&page=${this.state.page}`)
+            .then(
+                res => {
+                    console.log(res.data.items)
+                    let newData = this.state.repos.concat(res.data.items)
+                    this.setState({
+                        repos : newData  ,
+                        loading : false,
+                        page : this.state.page + 1,
+                        lastFetchedPage : this.state.lastFetchedPage + 1
+                    })
+                }
+            )
+            .catch(
+                err => console.log(err)
+            )
+        
+    }
+
+    render() {
+        return (
+            <div>
+                { this.state.repos.map(item => <Repository key={item.id} repo={item}></Repository>)}
+                { this.state.loading ?
+                    (<div className="spinner-border" role="status">
+                        <span className="sr-only">Loading...</span>
+                    </div>) : null
+                }
+
+            </div>
+        )
+
+    }
 }
+
+
 
 export default Repositories

@@ -9,7 +9,7 @@ function Repository(props) {
         <div className="card m-5">
             <div className="row">
                 <div className="col-md-2 align-self-center">
-                    <img src={avatar_url} alt="Admin" className="rounded-circle ml-3" width="150" />
+                    <img src={avatar_url} alt="github user" className="rounded-circle ml-3" width="150" />
                 </div>
                 <div className="col-md-10 ">
                     <div className="d-flex align-items-start flex-column ">
