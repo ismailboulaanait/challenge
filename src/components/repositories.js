@@ -23,16 +23,20 @@ class Repositories extends React.Component {
 
     componentDidMount() {
         const that = this;
+        // check if scroll is in the bottom
         window.addEventListener('scroll', function () {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
                 that.next()
             }
         });
+        // load data for first time
         this.loadData()
 
     }
 
-
+    // load next page 
+    // whene scrolling 
+    // or after errors (Trying againg)
     next = () => {
         this.setState({
             loading: true,
