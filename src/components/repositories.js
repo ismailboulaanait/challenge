@@ -2,32 +2,22 @@ import React from 'react';
 import axion from 'axios';
 import Repository from './repository';
 import disableScroll from 'disable-scroll';
+import {formatDate} from '../utils/dateUtil'
 
 
 class Repositories extends React.Component {
 
     constructor(props) {
-        super(props);
+        super(props)
         this.state = {
             repos: [],
             loading: true,
+            error: false,
             page: 1,
-         };
+        };
     }
+
     
-    formatDate = (date) => {
-        var d = new Date(date),
-            month = '' + (d.getMonth() + 1),
-            day = '' + d.getDate(),
-            year = d.getFullYear();
-
-        if (month.length < 2)
-            month = '0' + month;
-        if (day.length < 2)
-            day = '0' + day;
-
-        return [year, month, day].join('-');
-    }
 
 
 
@@ -35,7 +25,6 @@ class Repositories extends React.Component {
         const that = this;
         window.addEventListener('scroll', function () {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-                console.log("you're at the bottom of the page");
                 that.next()
             }
         });
@@ -46,7 +35,8 @@ class Repositories extends React.Component {
 
     next = () => {
         this.setState({
-            loading : true,
+            loading: true,
+            error : false 
         });
         this.loadData();
 
@@ -54,37 +44,52 @@ class Repositories extends React.Component {
 
 
     async loadData()  {
+        const {repos , page } = this.state
         disableScroll.on();
-        console.log('page => ', this.state.page);
         let yesterday = new Date(Date.now() - 86400000)
-       
-            await axion.get(`https://api.github.com/search/repositories?q=created:>${this.formatDate(yesterday)}&sort=stars&order=desc&page=${this.state.page}`)
+
+        await axion.get(`https://api.github.com/search/repositories?q=created:>${formatDate(yesterday)}&sort=stars&order=desc&page=${page}`)
             .then(
                 res => {
-                    console.log(res.data.items)
-                    let newData = this.state.repos.concat(res.data.items)
-                    this.setState({
-                        repos : newData  ,
-                        loading : false,
-                        page : this.state.page + 1,
-                        lastFetchedPage : this.state.lastFetchedPage + 1
+                    
+                    let newData = repos.concat(res.data.items)
+                    this.setState(  {
+                        repos: newData,
+                        loading: false,
+                        page: page + 1,
+                        error : false
                     })
+                    disableScroll.off()
                 }
             )
             .catch(
-                err => console.log(err)
+                err => {
+                    this.setState( {
+                        error: true,
+                        loading: false,
+                    })
+                    disableScroll.off()
+                }
             )
-            disableScroll.off()
-        
+
+
     }
 
     render() {
+        const {repos , loading , error} = this.state
         return (
             <div>
-                { this.state.repos.map(item => <Repository key={item.id} repo={item}></Repository>)}
-                { this.state.loading ?
+                { repos.map(item => <Repository key={item.id} repo={item}></Repository>)}
+                { loading ?
                     (<div className="spinner-border" role="status">
                         <span className="sr-only">Loading...</span>
+                    </div>) : null
+                }
+                {
+                    error ? 
+                    (<div className="alert alert-danger m-5" role="alert">
+                        oops, an error occurred !
+                        <button className="btn btn-secondary" onClick={this.next.bind(this)}>Try again ...</button>
                     </div>) : null
                 }
 

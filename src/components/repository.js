@@ -20,7 +20,7 @@ function Repository(props) {
                     <div className="d-flex align-items-end ">
                         <span className="badge badge-warning m-2">Stars : { stargazers_count}</span>
                         <span className="badge badge-danger m-2">Issues : {open_issues_count}</span>
-                        <small className="text-secondary m-2">submitted {updated_at} ago by {login}</small>
+                        <small className="text-secondary m-2">submitted {updated_at}  by {login}</small>
                     </div>
                 </div>
             </div>
